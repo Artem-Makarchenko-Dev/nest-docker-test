@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api } from "../lib/api";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -10,8 +11,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/backend-status");
-      const data = (await response.json()) as { message: string };
+      const { data } = await api.get<{ message: string }>("/connection");
 
       setMessage(data.message);
     } catch {
