@@ -6,6 +6,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum FileStatus {
+  PENDING
+  UPLOADED
+  DELETED
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -17,11 +23,32 @@ model User {
   roleId Int  @map("role_id")
   role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
+  files File[]
+
   @@index([createdAt])
   @@index([roleId])
   @@index([createdAt, roleId])
   @@index([isActive])
   @@map("users")
+}
+
+model File {
+  id          Int        @id @default(autoincrement())
+  key         String     @unique
+  filename    String
+  contentType String     @map("content_type")
+  size        Int?
+  status      FileStatus @default(PENDING)
+  uploadedBy  Int        @map("uploaded_by")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  user User @relation(fields: [uploadedBy], references: [id])
+
+  @@index([uploadedBy])
+  @@index([uploadedBy, status])
+  @@index([uploadedBy, createdAt])
+  @@index([uploadedBy, createdAt, status])
+  @@map("files")
 }
 
 model Role {
