@@ -1,29 +1,30 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { REDIS_CLIENT } from './redis.constants';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
-  private readonly client: Redis;
+  constructor(
+    @Inject(REDIS_CLIENT)
+    private readonly redis: Redis,
+  ) {}
 
-  constructor() {
-    const redisUrl = process.env.REDIS_URL;
-
-    if (!redisUrl) {
-      throw new Error('REDIS_URL is not set');
+  async set(key: string, value: string, ttlSeconds?: number) {
+    if (ttlSeconds) {
+      return this.redis.set(key, value, 'EX', ttlSeconds);
     }
-
-    this.client = new Redis(redisUrl);
-  }
-
-  async set(key: string, value: string) {
-    await this.client.set(key, value);
+    return this.redis.set(key, value);
   }
 
   async get(key: string) {
-    return this.client.get(key);
+    return this.redis.get(key);
+  }
+
+  async del(key: string) {
+    return this.redis.del(key);
   }
 
   async onModuleDestroy() {
-    await this.client.quit();
+    await this.redis.quit();
   }
 }
