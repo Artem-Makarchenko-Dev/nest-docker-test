@@ -12,6 +12,19 @@ enum FileStatus {
   DELETED
 }
 
+enum Plan {
+  FREE
+  PRO
+}
+
+enum BillingStatus {
+  NONE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -24,6 +37,13 @@ model User {
   role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   files File[]
+
+  plan          Plan          @default(FREE)
+  billingStatus BillingStatus @default(NONE) @map("billing_status")
+
+  stripeCustomerId     String? @unique @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  stripePriceId        String? @map("stripe_price_id")
 
   @@index([createdAt])
   @@index([roleId])
