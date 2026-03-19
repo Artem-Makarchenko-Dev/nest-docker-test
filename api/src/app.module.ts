@@ -11,6 +11,7 @@ import { MongoModule } from './infrastructure/mongo/mongo.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
     RedisModule,
     AuthModule,
     AuditModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
