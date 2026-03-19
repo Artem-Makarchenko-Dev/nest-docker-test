@@ -12,6 +12,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { UsersModule } from './modules/users/users.module';
+import { StorageModule } from './infrastructure/storage/storage.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     AuditModule,
     UsersModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [
