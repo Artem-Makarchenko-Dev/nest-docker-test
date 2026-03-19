@@ -1,0 +1,60 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { FilesService } from './files.service';
+import { CompleteUploadDto } from './dto/complete-upload.dto';
+import { PresignUploadDto } from './dto/presign-upload.dto';
+
+@Controller('files')
+export class FilesController {
+  constructor(private readonly filesService: FilesService) {}
+
+  @Post('presign')
+  async presignUpload(@Body() dto: PresignUploadDto, @Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId) throw new UnauthorizedException();
+
+    return this.filesService.presignUpload(userId, dto.filename, dto.contentType);
+  }
+
+  @Post('confirm')
+  async confirm(@Body() dto: CompleteUploadDto, @Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId) throw new UnauthorizedException();
+
+    return this.filesService.confirmUpload(userId, dto.key);
+  }
+
+  @Get()
+  async findAll(@Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId) throw new UnauthorizedException();
+
+    return this.filesService.findAll(userId);
+  }
+
+  @Get(':id/download')
+  async download(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId) throw new UnauthorizedException();
+
+    return this.filesService.generateDownloadUrl(userId, id);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const userId = (req as any).user?.id;
+    if (!userId) throw new UnauthorizedException();
+
+    return this.filesService.softDelete(userId, id);
+  }
+}
