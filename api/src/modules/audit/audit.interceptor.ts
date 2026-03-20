@@ -4,6 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, tap } from 'rxjs';
 import { AuditService } from './audit.service';
 import type { Request, Response } from 'express';
@@ -12,7 +13,7 @@ import type { Request, Response } from 'express';
 export class AuditInterceptor implements NestInterceptor {
   constructor(private readonly auditService: AuditService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const now = Date.now();
 
     let request: Request | undefined;
@@ -21,6 +22,13 @@ export class AuditInterceptor implements NestInterceptor {
     if (context.getType() === 'http') {
       request = context.switchToHttp().getRequest<Request>();
       response = context.switchToHttp().getResponse<Response>();
+    }
+
+    if (context.getType<'graphql'>() === 'graphql') {
+      const gqlContext = GqlExecutionContext.create(context);
+      const ctx = gqlContext.getContext<{ req: Request; res: Response }>();
+      request = ctx.req;
+      response = ctx.res;
     }
 
     return next.handle().pipe(
