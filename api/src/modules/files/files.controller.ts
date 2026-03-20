@@ -13,12 +13,22 @@ import type { Request } from 'express';
 import { FilesService } from './files.service';
 import { CompleteUploadDto } from './dto/complete-upload.dto';
 import { PresignUploadDto } from './dto/presign-upload.dto';
+import {
+  SwaggerFilesController,
+  SwaggerPresign,
+  SwaggerConfirm,
+  SwaggerFindAllFiles,
+  SwaggerDownloadFile,
+  SwaggerDeleteFile,
+} from './swagger/files.swagger';
 
+@SwaggerFilesController()
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('presign')
+  @SwaggerPresign()
   async presignUpload(@Body() dto: PresignUploadDto, @Req() req: Request) {
     const userId = (req as any).user?.id;
     if (!userId) throw new UnauthorizedException();
@@ -27,6 +37,7 @@ export class FilesController {
   }
 
   @Post('confirm')
+  @SwaggerConfirm()
   async confirm(@Body() dto: CompleteUploadDto, @Req() req: Request) {
     const userId = (req as any).user?.id;
     if (!userId) throw new UnauthorizedException();
@@ -35,6 +46,7 @@ export class FilesController {
   }
 
   @Get()
+  @SwaggerFindAllFiles()
   async findAll(@Req() req: Request) {
     const userId = (req as any).user?.id;
     if (!userId) throw new UnauthorizedException();
@@ -43,6 +55,7 @@ export class FilesController {
   }
 
   @Get(':id/download')
+  @SwaggerDownloadFile()
   async download(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     const userId = (req as any).user?.id;
     if (!userId) throw new UnauthorizedException();
@@ -51,6 +64,7 @@ export class FilesController {
   }
 
   @Delete(':id')
+  @SwaggerDeleteFile()
   async remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     const userId = (req as any).user?.id;
     if (!userId) throw new UnauthorizedException();

@@ -7,13 +7,16 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentsService } from './payments.service';
+import { SwaggerPaymentsController, SwaggerCreateCheckout } from './swagger/payments.swagger';
 
+@SwaggerPaymentsController()
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('checkout')
   @HttpCode(201)
+  @SwaggerCreateCheckout()
   async createCheckoutSession(@Req() req: Request) {
     const userId = (req as any).user?.id;
 

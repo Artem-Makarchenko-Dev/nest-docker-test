@@ -22,7 +22,18 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import type { AuthUser } from './types/auth-user.type';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  SwaggerSignup,
+  SwaggerLogin,
+  SwaggerLogout,
+  SwaggerRefresh,
+  SwaggerMe,
+  SwaggerGoogleStart,
+  SwaggerGoogleCallback,
+} from './swagger/auth.swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -35,6 +46,7 @@ export class AuthController {
   @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
+  @SwaggerSignup()
   async signup(@Body() body: SignupDto) {
     return this.authService.signup(body);
   }
@@ -42,6 +54,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @SwaggerLogin()
   async login(
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -61,6 +74,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @SwaggerLogout()
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -76,6 +90,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @SwaggerRefresh()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -93,6 +108,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(SessionAuthGuard, JwtAuthGuard)
+  @SwaggerMe()
   async me(@Req() req: Request) {
     return (req as any).user as AuthUser;
   }
@@ -100,11 +116,13 @@ export class AuthController {
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
+  @SwaggerGoogleStart()
   googleAuth() {}
 
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
+  @SwaggerGoogleCallback()
   async googleAuthRedirect(
     @Req() req: Request,
     @Res() res: Response,
