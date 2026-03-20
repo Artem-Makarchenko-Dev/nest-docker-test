@@ -8,6 +8,8 @@ import { FileStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { StorageProvider } from '../../infrastructure/storage/storage.provider';
 import { STORAGE } from '../../infrastructure/storage/storage.module';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { PaginationResponse } from '../../common/types/pagination-response';
 
 @Injectable()
 export class FilesService {
@@ -67,19 +69,55 @@ export class FilesService {
     });
   }
 
-  async findAll(userId: number) {
-    return this.prisma.file.findMany({
-      where: { uploadedBy: userId },
-      select: {
-        id: true,
-        filename: true,
-        size: true,
-        contentType: true,
-        createdAt: true,
-        status: true,
+  async findAll(
+    userId: number,
+    { page, limit, sortBy, order, status, contentType }: PaginationDto,
+  ): Promise<PaginationResponse<unknown>> {
+    const skip = (page - 1) * limit;
+
+    const allowedSortFields = ['createdAt', 'filename', 'size'];
+    const sortField = allowedSortFields.includes(sortBy ?? '')
+      ? sortBy
+      : 'createdAt';
+    const sortOrder = order ?? 'desc';
+
+    const where = {
+      uploadedBy: userId,
+      ...(status && { status: status as FileStatus }),
+      ...(contentType && { contentType }),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.file.findMany({
+        where,
+        select: {
+          id: true,
+          filename: true,
+          size: true,
+          contentType: true,
+          createdAt: true,
+          status: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { [sortField!]: sortOrder },
+      }),
+      this.prisma.file.count({ where }),
+    ]);
+
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   async generateDownloadUrl(userId: number, fileId: number) {

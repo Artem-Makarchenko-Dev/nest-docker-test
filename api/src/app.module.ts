@@ -32,6 +32,7 @@ import { StorageModule } from './infrastructure/storage/storage.module';
 import { FilesModule } from './modules/files/files.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module
     FilesModule,
     PaymentsModule,
     AdminGraphQLModule,
+    HealthModule,
     EventsModule,
     JobsModule,
     WsModule,

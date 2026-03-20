@@ -6,11 +6,13 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { FilesService } from './files.service';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import { CompleteUploadDto } from './dto/complete-upload.dto';
 import { PresignUploadDto } from './dto/presign-upload.dto';
 import {
@@ -51,11 +53,11 @@ export class FilesController {
 
   @Get()
   @SwaggerFindAllFiles()
-  async findAll(@Req() req: Request) {
+  async findAll(@Req() req: Request, @Query() pagination: PaginationDto) {
     const userId = req.user?.id;
     if (!userId) throw new UnauthorizedException();
 
-    return this.filesService.findAll(userId);
+    return this.filesService.findAll(userId, pagination);
   }
 
   @Get(':id/download')

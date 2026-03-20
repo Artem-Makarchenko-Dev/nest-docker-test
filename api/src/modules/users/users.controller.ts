@@ -1,6 +1,14 @@
-import { Controller, Delete, Get, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Permissions } from '../auth/decorators/permissions.decorator';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
   SwaggerUsersController,
   SwaggerFindAllUsers,
@@ -16,8 +24,8 @@ export class UsersController {
   @Get()
   @Permissions('users.read')
   @SwaggerFindAllUsers()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.usersService.findAll(pagination);
   }
 
   @Get(':id')

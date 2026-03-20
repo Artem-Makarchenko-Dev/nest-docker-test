@@ -1,23 +1,63 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PaginationDto } from '../../common/dto/pagination.dto';
+import { PaginationResponse } from '../../common/types/pagination-response';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        isActive: true,
-        createdAt: true,
-        role: {
-          select: { name: true },
+  async findAll({
+    page,
+    limit,
+    sortBy,
+    order,
+    roleId,
+    isActive,
+  }: PaginationDto): Promise<PaginationResponse<unknown>> {
+    const skip = (page - 1) * limit;
+
+    const allowedSortFields = ['createdAt', 'email'];
+    const sortField = allowedSortFields.includes(sortBy ?? '')
+      ? sortBy
+      : 'createdAt';
+    const sortOrder = order ?? 'desc';
+
+    const where = {
+      ...(roleId !== undefined && { roleId: Number(roleId) }),
+      ...(isActive !== undefined && { isActive: isActive === 'true' }),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          isActive: true,
+          createdAt: true,
+          role: { select: { name: true } },
         },
+        skip,
+        take: limit,
+        orderBy: { [sortField!]: sortOrder },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   async findById(id: number) {
