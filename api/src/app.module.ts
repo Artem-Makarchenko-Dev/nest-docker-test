@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -62,6 +63,20 @@ import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module
       autoSchemaFile: true,
       context: ({ req }: { req: Request }) => ({ req }),
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'default',
+          ttl: 60000,
+          limit: 100,
+        },
+        {
+          name: 'auth',
+          ttl: 60000,
+          limit: 5,
+        },
+      ],
+    }),
     EventEmitterModule.forRoot({
       wildcard: true,
       delimiter: '.',
@@ -108,6 +123,10 @@ import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_GUARD,
