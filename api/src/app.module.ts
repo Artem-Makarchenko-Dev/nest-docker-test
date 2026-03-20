@@ -14,6 +14,7 @@ import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { UsersModule } from './modules/users/users.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
 import { FilesModule } from './modules/files/files.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FilesModule } from './modules/files/files.module';
     UsersModule,
     StorageModule,
     FilesModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [
