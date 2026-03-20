@@ -4,5 +4,6 @@ declare module 'express' {
   interface Request {
     user?: AuthUser;
     userId?: number;
+    correlationId?: string;
   }
 }
