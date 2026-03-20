@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaController } from './prisma.controller';
+import { PrismaService } from './prisma.service';
 
 describe('PrismaController', () => {
   let controller: PrismaController;
@@ -7,6 +8,12 @@ describe('PrismaController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PrismaController],
+      providers: [
+        {
+          provide: PrismaService,
+          useValue: { getConnectionStatus: jest.fn() },
+        },
+      ],
     }).compile();
 
     controller = module.get<PrismaController>(PrismaController);

@@ -5,5 +5,9 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "collectCoverage": true,
+  "coverageDirectory": "<rootDir>/../coverage-e2e",
+  "coverageProvider": "v8",
+  "collectCoverageFrom": ["<rootDir>/../src/**/*.ts"]
 }
