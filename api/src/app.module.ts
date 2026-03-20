@@ -3,6 +3,8 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventsModule } from './modules/events/events.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -29,6 +31,11 @@ import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module
       autoSchemaFile: true,
       context: ({ req }: { req: Request }) => ({ req }),
     }),
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
+      maxListeners: 20,
+    }),
     MongoModule,
     PrismaModule,
     RedisModule,
@@ -39,6 +46,7 @@ import { AdminGraphQLModule } from './modules/admin/graphql/admin-graphql.module
     FilesModule,
     PaymentsModule,
     AdminGraphQLModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [
