@@ -1,52 +1,30 @@
-"use client";
-
-import { useState } from "react";
-import { api } from "../lib/api";
+import Link from 'next/link';
 
 export default function Home() {
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleCheckBackend = async () => {
-    setIsLoading(true);
-
-    try {
-      const { data } = await api.get<{ message: string }>("/connection");
-
-      setMessage(data.message);
-    } catch {
-      setMessage("Failed to reach backend");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
-      <section className="w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-900 p-10 shadow-2xl">
-        <p className="text-sm uppercase tracking-[0.3em] text-cyan-400">
-          Frontend + Backend
-        </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-tight">
-          Connection check
+    <div className="min-h-screen bg-gray-950 text-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-purple-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse delay-1000" />
+      </div>
+
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] relative z-10 px-4 pt-24">
+        <h1 className="text-5xl md:text-7xl font-bold text-center bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent drop-shadow-sm">
+          Nest Docker Test
         </h1>
-        <p className="mt-4 text-base text-slate-300">
-          Click the button to send a request from the frontend to the backend.
+        <p className="mt-6 text-lg text-gray-400 max-w-2xl text-center">
+          Full-stack demo: JWT auth, files, Stripe, RBAC — wired to the Nest API.
         </p>
 
-        <button
-          type="button"
-          onClick={handleCheckBackend}
-          disabled={isLoading}
-          className="mt-8 rounded-full bg-cyan-400 px-6 py-3 font-medium text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-300"
-        >
-          {isLoading ? "Loading..." : "Check backend"}
-        </button>
-
-        <div className="mt-6 min-h-16 rounded-2xl border border-slate-800 bg-slate-950/70 p-5 text-lg">
-          {message || "Response will appear here"}
+        <div className="mt-10 flex flex-wrap gap-4 justify-center">
+          <Link
+            href="/login"
+            className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold hover:from-purple-500 hover:to-blue-500 hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/25"
+          >
+            Get started
+          </Link>
         </div>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
