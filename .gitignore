@@ -39,6 +39,7 @@ coverage
 # env
 .env
 .env.*
+!.env.example
 
 # temp
 .temp
