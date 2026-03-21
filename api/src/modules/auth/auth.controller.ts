@@ -21,7 +21,6 @@ import {
   setAuthCookies,
   setRefreshCookie,
 } from './auth.cookies';
-import { SessionAuthGuard } from './guards/session-auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
@@ -115,8 +114,9 @@ export class AuthController {
     return { accessToken };
   }
 
+  /** Bearer JWT only — session cookies are not reliably sent on cross-origin XHR (e.g. Next :8080 → API :3000). */
   @Get('me')
-  @UseGuards(SessionAuthGuard, JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @SwaggerMe()
   me(@Req() req: Request) {
     return req.user as AuthUser;
