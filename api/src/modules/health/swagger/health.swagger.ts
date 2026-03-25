@@ -1,32 +1,35 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  LivenessResponseDto,
+  ReadinessResponseDto,
+} from '../dto/health-responses.dto';
+import { ApiErrServiceUnavailable } from '../../../common/swagger/standard-error-responses.decorator';
 
 export function SwaggerHealthLive() {
   return applyDecorators(
-    ApiOperation({ summary: 'Liveness probe' }),
-    ApiResponse({
-      status: 200,
-      description: 'Application is alive',
-      schema: { example: { status: 'ok' } },
+    ApiOperation({
+      summary: 'Liveness probe',
+      description: 'Process is up; does not check downstream dependencies.',
+    }),
+    ApiOkResponse({
+      description: 'Alive',
+      type: LivenessResponseDto,
     }),
   );
 }
 
 export function SwaggerHealthReady() {
   return applyDecorators(
-    ApiOperation({ summary: 'Readiness probe' }),
-    ApiResponse({
-      status: 200,
-      description: 'Application is ready',
-      schema: {
-        example: {
-          status: 'ok',
-          checks: { postgres: { status: 'up', latencyMs: 3 } },
-          uptime: 120.5,
-          timestamp: '2026-01-01T00:00:00.000Z',
-        },
-      },
+    ApiOperation({
+      summary: 'Readiness probe',
+      description:
+        'Checks PostgreSQL connectivity. Returns **503** when not ready.',
     }),
-    ApiResponse({ status: 503, description: 'Service unavailable' }),
+    ApiOkResponse({
+      description: 'All checks passed',
+      type: ReadinessResponseDto,
+    }),
+    ApiErrServiceUnavailable('Postgres down or unreachable'),
   );
 }

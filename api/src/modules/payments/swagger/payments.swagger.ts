@@ -1,27 +1,27 @@
 import { applyDecorators } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CheckoutSessionResponseDto } from '../dto/checkout-response.dto';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+  ApiErrNotFound,
+  ApiErrUnauthorized,
+} from '../../../common/swagger/standard-error-responses.decorator';
 
 export function SwaggerPaymentsController() {
-  return applyDecorators(ApiTags('Payments'), ApiBearerAuth('access-token'));
+  return applyDecorators(ApiTags('Payments'));
 }
 
 export function SwaggerCreateCheckout() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Create Stripe Checkout session for Premium plan',
+      summary: 'Create Stripe Checkout session',
+      description:
+        'Starts subscription checkout for the Premium plan. Creates or reuses a Stripe customer for the current user; returns a hosted Checkout URL.',
     }),
-    ApiResponse({
-      status: 201,
-      description: 'Checkout session created successfully',
-      schema: {
-        example: { url: 'https://checkout.stripe.com/c/pay/cs_test_123...' },
-      },
+    ApiCreatedResponse({
+      description: 'Hosted Checkout URL',
+      type: CheckoutSessionResponseDto,
     }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiErrUnauthorized(),
+    ApiErrNotFound('User record missing'),
   );
 }

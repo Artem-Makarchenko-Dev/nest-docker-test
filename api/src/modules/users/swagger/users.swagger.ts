@@ -1,45 +1,68 @@
 import { applyDecorators } from '@nestjs/common';
 import {
-  ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  UserDeletedResponseDto,
+  UserDetailResponseDto,
+  UsersPaginatedResponseDto,
+} from '../dto/user-responses.dto';
+import {
+  ApiErrorsAuthenticatedList,
+  ApiErrorsAuthenticatedRead,
+} from '../../../common/swagger/standard-error-responses.decorator';
+import { ApiUsersPaginationQueries } from '../../../common/swagger/pagination-queries.decorator';
 
 export function SwaggerUsersController() {
-  return applyDecorators(ApiTags('Users'), ApiBearerAuth('access-token'));
+  return applyDecorators(ApiTags('Users'));
 }
 
 export function SwaggerFindAllUsers() {
   return applyDecorators(
-    ApiOperation({ summary: 'Get all users (admin only)' }),
-    ApiResponse({
-      status: 200,
-      description: 'List of users returned successfully',
+    ApiOperation({
+      summary: 'List users',
+      description:
+        'Paginated directory with optional filters. Requires `users.read`. Response: `{ data, meta }` (meta has `total`, `page`, `limit`, page flags).',
     }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
-    ApiResponse({ status: 403, description: 'Forbidden (missing permission)' }),
+    ApiUsersPaginationQueries(),
+    ApiOkResponse({
+      description: 'Paginated users',
+      type: UsersPaginatedResponseDto,
+    }),
+    ApiErrorsAuthenticatedList(),
   );
 }
 
 export function SwaggerFindOneUser() {
   return applyDecorators(
-    ApiOperation({ summary: 'Get user by ID' }),
+    ApiOperation({
+      summary: 'Get user by ID',
+      description: 'Requires `users.read`.',
+    }),
     ApiParam({ name: 'id', type: Number, description: 'User ID' }),
-    ApiResponse({ status: 200, description: 'User found' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
-    ApiResponse({ status: 404, description: 'User not found' }),
+    ApiOkResponse({
+      description: 'User with role details',
+      type: UserDetailResponseDto,
+    }),
+    ApiErrorsAuthenticatedRead(),
   );
 }
 
 export function SwaggerDeleteUser() {
   return applyDecorators(
-    ApiOperation({ summary: 'Delete user by ID (admin only)' }),
+    ApiOperation({
+      summary: 'Delete user',
+      description:
+        'Hard delete. Requires `users.delete`. Response mirrors safe user fields (password hash is not part of this schema).',
+    }),
     ApiParam({ name: 'id', type: Number, description: 'User ID' }),
-    ApiResponse({ status: 200, description: 'User deleted successfully' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
-    ApiResponse({ status: 403, description: 'Forbidden (missing permission)' }),
-    ApiResponse({ status: 404, description: 'User not found' }),
+    ApiOkResponse({
+      description: 'Deleted user (documented fields only)',
+      type: UserDeletedResponseDto,
+    }),
+    ApiErrorsAuthenticatedRead(),
   );
 }

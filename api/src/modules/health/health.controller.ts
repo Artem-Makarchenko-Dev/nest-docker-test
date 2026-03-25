@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { HealthService } from './health.service';
 import { Public } from '../auth/decorators/public.decorator';
@@ -9,7 +9,6 @@ import {
 } from './swagger/health.swagger';
 
 @ApiTags('Health')
-@ApiBearerAuth('access-token')
 @SkipThrottle()
 @Controller('health')
 export class HealthController {

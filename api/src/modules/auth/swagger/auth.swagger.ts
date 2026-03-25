@@ -1,87 +1,126 @@
 import { applyDecorators } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
-  ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
 import { LoginDto } from '../dto/login.dto';
 import { SignupDto } from '../dto/signup.dto';
+import {
+  LoginResponseDto,
+  LogoutResponseDto,
+  MeResponseDto,
+  RefreshResponseDto,
+  SignupResponseDto,
+} from '../dto/auth-responses.dto';
+import {
+  ApiErrBadRequest,
+  ApiErrConflict,
+  ApiErrUnauthorized,
+} from '../../../common/swagger/standard-error-responses.decorator';
 
 export function SwaggerSignup() {
   return applyDecorators(
-    ApiOperation({ summary: 'Register new user' }),
+    ApiOperation({
+      summary: 'Sign up',
+      description: 'Create a local account with email and password.',
+    }),
     ApiBody({ type: SignupDto }),
-    ApiResponse({ status: 201, description: 'User successfully created' }),
-    ApiResponse({ status: 400, description: 'Validation failed' }),
+    ApiCreatedResponse({
+      description: 'User created',
+      type: SignupResponseDto,
+    }),
+    ApiErrBadRequest('Validation failed or missing email/password'),
+    ApiErrConflict('Email already registered'),
   );
 }
 
 export function SwaggerLogin() {
   return applyDecorators(
-    ApiOperation({ summary: 'User login' }),
-    ApiBody({ type: LoginDto }),
-    ApiResponse({
-      status: 200,
-      description: 'User successfully logged in',
-      schema: {
-        example: { accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
-      },
+    ApiOperation({
+      summary: 'Log in',
+      description:
+        'Login with email and password. Returns `accessToken` and sets HttpOnly session cookies (`sid`, `refresh`).',
     }),
-    ApiResponse({ status: 401, description: 'Invalid credentials' }),
+    ApiBody({ type: LoginDto }),
+    ApiOkResponse({
+      description: 'Authenticated; cookies set',
+      type: LoginResponseDto,
+    }),
+    ApiErrBadRequest('Missing email or password'),
+    ApiErrUnauthorized('Invalid credentials'),
   );
 }
 
 export function SwaggerLogout() {
   return applyDecorators(
-    ApiOperation({ summary: 'Logout current user' }),
-    ApiBearerAuth('access-token'),
-    ApiResponse({ status: 200, description: 'Successfully logged out' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiOperation({
+      summary: 'Log out',
+      description:
+        'Revokes the server session when `sid` is present and clears auth cookies. Send Bearer JWT if the client uses it.',
+    }),
+    ApiOkResponse({
+      description: 'Logged out',
+      type: LogoutResponseDto,
+    }),
+    ApiErrUnauthorized(),
   );
 }
 
 export function SwaggerRefresh() {
   return applyDecorators(
-    ApiOperation({ summary: 'Refresh access token using refresh cookie' }),
-    ApiCookieAuth(),
-    ApiResponse({
-      status: 200,
-      description: 'Access token refreshed',
-      schema: { example: { accessToken: 'newAccessToken...' } },
+    ApiOperation({
+      summary: 'Refresh access token',
+      description:
+        'Uses HttpOnly cookies (`sid`, `refresh`). Returns a new `accessToken` and rotates the refresh cookie. Authorize with the **refresh** cookie scheme in Swagger UI.',
     }),
-    ApiResponse({ status: 401, description: 'Invalid or expired session' }),
+    ApiOkResponse({
+      description: 'New access token issued',
+      type: RefreshResponseDto,
+    }),
+    ApiErrUnauthorized('Missing, invalid, or expired session'),
   );
 }
 
 export function SwaggerMe() {
   return applyDecorators(
-    ApiOperation({ summary: 'Get current authenticated user' }),
-    ApiBearerAuth('access-token'),
-    ApiResponse({
-      status: 200,
-      description: 'Current authenticated user',
-      schema: { example: { id: 1, email: 'user@mail.com', roleId: 2 } },
+    ApiOperation({
+      summary: 'Current user',
+      description:
+        'Returns the authenticated user and permission codes. Use `Authorization: Bearer` (cross-origin SPAs often rely on this instead of cookies).',
     }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiOkResponse({
+      description: 'Authenticated user with permissions',
+      type: MeResponseDto,
+    }),
+    ApiErrUnauthorized(),
   );
 }
 
 export function SwaggerGoogleStart() {
   return applyDecorators(
-    ApiOperation({ summary: 'Start Google OAuth flow' }),
+    ApiOperation({
+      summary: 'Google OAuth — start',
+      description:
+        'Redirects the browser to Google. Use a top-level navigation, not XHR.',
+    }),
     ApiResponse({ status: 302, description: 'Redirect to Google OAuth' }),
   );
 }
 
 export function SwaggerGoogleCallback() {
   return applyDecorators(
-    ApiOperation({ summary: 'Google OAuth callback handler' }),
+    ApiOperation({
+      summary: 'Google OAuth — callback',
+      description:
+        'Handles Google redirect, sets session cookies, then redirects to the web app with tokens in the query string.',
+    }),
     ApiResponse({
       status: 302,
-      description: 'Redirect after successful authentication',
+      description: 'Redirect to frontend with access token in query',
     }),
-    ApiResponse({ status: 401, description: 'OAuth failed' }),
+    ApiErrUnauthorized('OAuth failed or email missing from profile'),
   );
 }

@@ -1,68 +1,112 @@
 import { applyDecorators } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CompleteUploadDto } from '../dto/complete-upload.dto';
 import { PresignUploadDto } from '../dto/presign-upload.dto';
+import {
+  DownloadUrlResponseDto,
+  FileRecordResponseDto,
+  FilesPaginatedResponseDto,
+  PresignUploadResponseDto,
+} from '../dto/file-responses.dto';
+import {
+  ApiErrBadRequest,
+  ApiErrForbidden,
+  ApiErrUnauthorized,
+} from '../../../common/swagger/standard-error-responses.decorator';
+import { ApiFilesPaginationQueries } from '../../../common/swagger/pagination-queries.decorator';
 
 export function SwaggerFilesController() {
-  return applyDecorators(ApiTags('Files'), ApiBearerAuth('access-token'));
+  return applyDecorators(ApiTags('Files'));
 }
 
 export function SwaggerPresign() {
   return applyDecorators(
-    ApiOperation({ summary: 'Generate presigned URL for file upload' }),
-    ApiBody({ type: PresignUploadDto }),
-    ApiResponse({
-      status: 201,
-      description: 'Presigned URL generated successfully',
+    ApiOperation({
+      summary: 'Presign upload',
+      description:
+        'Creates a `PENDING` file row and returns a presigned URL plus object `key` for S3-compatible upload.',
     }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiBody({ type: PresignUploadDto }),
+    ApiCreatedResponse({
+      description: 'Presigned URL and key',
+      type: PresignUploadResponseDto,
+    }),
+    ApiErrUnauthorized(),
   );
 }
 
 export function SwaggerConfirm() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Confirm file upload after S3 upload is complete',
+      summary: 'Confirm upload',
+      description:
+        'Verifies the object exists in storage and marks the file as `UPLOADED`.',
     }),
     ApiBody({ type: CompleteUploadDto }),
-    ApiResponse({
-      status: 201,
-      description: 'Upload confirmed and file saved in DB',
+    ApiCreatedResponse({
+      description: 'Updated file record',
+      type: FileRecordResponseDto,
     }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiErrUnauthorized(),
+    ApiErrForbidden('Key does not belong to the current user'),
+    ApiErrBadRequest('Invalid status or object missing in storage'),
   );
 }
 
 export function SwaggerFindAllFiles() {
   return applyDecorators(
-    ApiOperation({ summary: 'Get all user files' }),
-    ApiResponse({ status: 200, description: 'List of user files' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiOperation({
+      summary: 'List my files',
+      description:
+        'Paginated list for the authenticated user. Response: `{ data, meta }`.',
+    }),
+    ApiFilesPaginationQueries(),
+    ApiOkResponse({
+      description: 'Paginated files',
+      type: FilesPaginatedResponseDto,
+    }),
+    ApiErrUnauthorized(),
   );
 }
 
 export function SwaggerDownloadFile() {
   return applyDecorators(
-    ApiOperation({ summary: 'Generate temporary download URL for file' }),
+    ApiOperation({
+      summary: 'Get download URL',
+      description: 'Returns a time-limited URL for an `UPLOADED` file you own.',
+    }),
     ApiParam({ name: 'id', type: Number, description: 'File ID' }),
-    ApiResponse({ status: 200, description: 'Download URL generated' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
-    ApiResponse({ status: 404, description: 'File not found' }),
+    ApiOkResponse({
+      description: 'Presigned download URL',
+      type: DownloadUrlResponseDto,
+    }),
+    ApiErrUnauthorized(),
+    ApiErrForbidden('File not owned by user'),
+    ApiErrBadRequest('File not available for download'),
   );
 }
 
 export function SwaggerDeleteFile() {
   return applyDecorators(
-    ApiOperation({ summary: 'Soft delete file' }),
+    ApiOperation({
+      summary: 'Soft-delete file',
+      description:
+        'Removes the object from storage and sets status to `DELETED`.',
+    }),
     ApiParam({ name: 'id', type: Number, description: 'File ID' }),
-    ApiResponse({ status: 200, description: 'File soft-deleted' }),
-    ApiResponse({ status: 401, description: 'Unauthorized' }),
+    ApiOkResponse({
+      description: 'Updated file record',
+      type: FileRecordResponseDto,
+    }),
+    ApiErrUnauthorized(),
+    ApiErrForbidden('File not owned by user'),
+    ApiErrBadRequest('File already deleted'),
   );
 }
