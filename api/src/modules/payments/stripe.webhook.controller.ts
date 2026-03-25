@@ -3,13 +3,19 @@ import type { RawBodyRequest } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PaymentsService } from './payments.service';
 import { Public } from '../auth/decorators/public.decorator';
+import {
+  SwaggerStripeWebhook,
+  SwaggerStripeWebhookController,
+} from './swagger/stripe-webhook.swagger';
 
+@SwaggerStripeWebhookController()
 @Controller('stripe')
 export class StripeWebhookController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Public()
   @Post('webhook')
+  @SwaggerStripeWebhook()
   async handleWebhook(
     @Req() req: RawBodyRequest<Request>,
     @Res() res: Response,

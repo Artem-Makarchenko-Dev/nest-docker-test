@@ -3,13 +3,19 @@ import { Observable, fromEventPattern } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { GqlJwtAuthGuard } from '../../auth/guards/gql-jwt-auth.guard';
+import {
+  SwaggerAdminEventsController,
+  SwaggerAdminEventsSse,
+} from './admin-events.swagger';
 
+@SwaggerAdminEventsController()
 @UseGuards(GqlJwtAuthGuard)
 @Controller('admin')
 export class AdminEventsController {
   constructor(private readonly emitter: EventEmitter2) {}
 
   @Sse('events')
+  @SwaggerAdminEventsSse()
   stream(): Observable<MessageEvent> {
     const event$ = fromEventPattern<{ type?: string }>(
       (handler: (...args: unknown[]) => void) => this.emitter.on('*', handler),
