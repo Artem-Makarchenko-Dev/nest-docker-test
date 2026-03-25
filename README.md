@@ -2,20 +2,20 @@
 
 Backend-driven SaaS platform for file storage and management, built using an API-first approach with a focus on production-grade architecture.
 
-## Live Demo
+## Quick Access
 
 - API (Swagger):
   https://nest-docker-test-5t7h.onrender.com/docs
 
-- Web (partial client):
-  https://full-stack-web-hni7.onrender.com/
+- Postman Collection:
+  https://www.postman.com/artem3-2305/workspace/file-cloud-lab-api
 
-The frontend is partially implemented and demonstrates core integration flows:
-- initial page
-- authentication flow
+- Design (Figma):
+  https://www.figma.com/design/0hUbG6oFLoB2inmTHxfQNv/File-Cloud-Lab
 
-The project follows a backend-first approach, 
-and the frontend is treated as a separate client layer.
+- Live Demo (Frontend):
+  https://full-stack-web-hni7.onrender.com/  
+  _(frontend is in progress, intentionally minimal and focused on demonstrating backend integration and core flows: initial page and authentication)_
 
 ## TL;DR
 
@@ -308,21 +308,26 @@ The design covers both user and admin flows, including authentication, file mana
 
 ---
 
+### First Screen Landing
+![Landing](./design/main.webp)
+
+---
+
+### User Interface
+
+#### Profile & Files
+![Profile](./design/user/profile.webp)
+![Files list](./design/user/files-list.webp)
+
+---
+
 ### Admin Interface
 
 #### Users & File Management
-![Users](./design/screens/users.webp)
-![User Files](./design/screens/user-files.webp)
+![Users](./design/admin/users.webp)
 
-#### Roles & Permissions (RBAC)
-![Roles](./design/screens/roles.webp)
-![Permissions](./design/screens/permissions.webp)
 
-#### Billing
-![Billing](./design/screens/billing.webp)
-
-#### System Monitoring (Realtime)
-![Console](./design/screens/console.webp)
+![Console](./design/admin/console.webp)
 
 ## Development Journey
 
